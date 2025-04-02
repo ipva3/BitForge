@@ -21,7 +21,7 @@ typedef enum log_level {
   LOG_LEVEL_TRACE = 5
 } log_level;
 
-b8 initialize_loggins();
+b8 initialize_logging();
 void shutdown_logging();
 
 BFAPI void log_ouput(log_level level, const char* message, ...);

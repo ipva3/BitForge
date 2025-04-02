@@ -13,6 +13,8 @@
     "logger.h": "c",
     "vfs.h": "c",
     "system_error": "c",
-    "stdarg.h": "c"
+    "stdarg.h": "c",
+    "iosfwd": "c",
+    "xlocbuf": "c"
   }
 }
