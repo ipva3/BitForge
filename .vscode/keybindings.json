@@ -1,0 +1,12 @@
+// Replace keybindings in your keybindings.json in the use folder to use these.
+[
+  {
+    "key": "ctrl+r ctrl+t",
+    "command": "workbench.action.tasks.runTask"
+  },
+  {
+    "key": "ctrl+shift+c",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Clean Everything"
+  }
+]
