@@ -12,6 +12,7 @@
     "core_render_types.h": "c",
     "logger.h": "c",
     "vfs.h": "c",
-    "test.h": "c"
+    "system_error": "c",
+    "stdarg.h": "c"
   }
 }
