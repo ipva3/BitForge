@@ -29,7 +29,7 @@ int main(void) {
 
   // Initialization.
   if (!application_create(&game_inst)) {
-    BFINFO("Application failed to create!.");
+    BFFATAL("Application failed to create!.");
     return 1;
   }
 

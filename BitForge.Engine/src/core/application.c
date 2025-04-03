@@ -4,6 +4,7 @@
 #include "core/logger.h"
 #include "platform/platform.h"
 #include "core/bmemory.h"
+#include "core/event.h"
 
 typedef struct application_state {
   game* game_inst;
@@ -39,6 +40,11 @@ b8 application_create(game* game_inst) {
 
   app_state.is_running = true;
   app_state.is_suspended = false;
+
+  if (!event_initialize()) {
+    BFERROR("Event system failed initialization. Capplication cannot continue.");
+    return false;
+  }
 
   if (!platform_startup(
           &app_state.platform,
@@ -86,6 +92,8 @@ b8 application_run() {
   }
 
   app_state.is_running = false;
+
+  event_shutdown();
 
   platform_shutdown(&app_state.platform);
 
