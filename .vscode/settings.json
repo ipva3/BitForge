@@ -16,6 +16,7 @@
     "stdarg.h": "c",
     "iosfwd": "c",
     "xlocbuf": "c",
-    "array": "c"
+    "array": "c",
+    "renderer_backend.h": "c"
   }
 }
