@@ -15,6 +15,7 @@
     "system_error": "c",
     "stdarg.h": "c",
     "iosfwd": "c",
-    "xlocbuf": "c"
+    "xlocbuf": "c",
+    "array": "c"
   }
 }

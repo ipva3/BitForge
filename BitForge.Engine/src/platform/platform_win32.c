@@ -1,9 +1,10 @@
-#include "platform.h"
+#include "platform/platform.h"
 
 // Windows platform layer.
 #if BFPLATFORM_WINDOWS
 
-#  include <core/logger.h>
+#  include "core/logger.h"
+#  include "core/input.h"
 
 #  include <windows.h>
 #  include <windowsx.h> // param input extraction
@@ -22,7 +23,7 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
 
 b8 platform_startup(
     platform_state* plat_state,
-    const char* appliction_name,
+    const char* application_name,
     i32 x,
     i32 y,
     i32 width,
@@ -82,12 +83,12 @@ b8 platform_startup(
   window_height += border_rect.bottom - border_rect.top;
 
   HWND handle = CreateWindowExA(
-      window_ex_style, "bitforge_window_class", appliction_name,
+      window_ex_style, "bitforge_window_class", application_name,
       window_style, window_x, window_y, window_width, window_height,
       0, 0, state->h_instance, 0);
 
   if (handle == 0) {
-    MessageBoxA(NULL, "Window creation failed!", "Error", MB_ICONEXCLAMATION | MB_OK);
+    MessageBoxA(NULL, "Window creation failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
 
     BFFATAL("Window creation failed!");
     return false;
@@ -96,8 +97,8 @@ b8 platform_startup(
   }
 
   // Show the window
-  b32 should_active = true; // TODO: if the window should not accept input, this should be false;
-  i32 show_window_command_flags = should_active ? SW_SHOW : SW_SHOWNOACTIVATE;
+  b32 should_activate = 1; // TODO: if the window should not accept input, this should be false.
+  i32 show_window_command_flags = should_activate ? SW_SHOW : SW_SHOWNOACTIVATE;
   // If initially minimized, use SW_MINIMIZE : SW_SHOWMINNOACTIVE;
   // If initially maximized, use SW_SHOWMAXIMIZED : SW_MAXIMIZE;
   ShowWindow(state->hwnd, show_window_command_flags);
@@ -151,28 +152,26 @@ void* platform_set_memory(void* dest, i32 value, u64 size) {
   return memset(dest, value, size);
 }
 
-void platform_console_write(const char* message, u8 color) {
+void platform_console_write(const char* message, u8 colour) {
   HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
   // FATAL, ERROR, WARN, INFO, DEBUG, TRACE
   static u8 levels[6] = {64, 4, 6, 2, 1, 8};
-  SetConsoleTextAttribute(console_handle, levels[color]);
-
+  SetConsoleTextAttribute(console_handle, levels[colour]);
   OutputDebugStringA(message);
   u64 length = strlen(message);
   LPDWORD number_written = 0;
-  WriteConsoleA(console_handle, message, (DWORD)length, number_written, 0);
+  WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), message, (DWORD)length, number_written, 0);
 }
 
-void platform_console_write_error(const char* message, u8 color) {
+void platform_console_write_error(const char* message, u8 colour) {
   HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);
   // FATAL, ERROR, WARN, INFO, DEBUG, TRACE
   static u8 levels[6] = {64, 4, 6, 2, 1, 8};
-  SetConsoleTextAttribute(console_handle, levels[color]);
-
+  SetConsoleTextAttribute(console_handle, levels[colour]);
   OutputDebugStringA(message);
   u64 length = strlen(message);
   LPDWORD number_written = 0;
-  WriteConsoleA(console_handle, message, (DWORD)length, number_written, 0);
+  WriteConsoleA(GetStdHandle(STD_ERROR_HANDLE), message, (DWORD)length, number_written, 0);
 }
 
 f64 platform_get_absolute_time() {
@@ -210,23 +209,27 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
   case WM_KEYUP:
   case WM_SYSKEYUP: {
     // Key pressed/released
-    // b8 pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
-    // TODO: input processing
+    b8 pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
+    keys key = (u16)w_param;
 
+    // Pass to the input subsystem for processing.
+    input_process_key(key, pressed);
   } break;
   case WM_MOUSEMOVE: {
     // Mouse move
-    // i32 x_position = GET_X_LPARAM(l_param);
-    // i32 y_position = GET_Y_LPARAM(l_param);
-    // TODO: input processing.
+    i32 x_position = GET_X_LPARAM(l_param);
+    i32 y_position = GET_Y_LPARAM(l_param);
+
+    // Pass over to the input subsystem.
+    input_process_mouse_move(x_position, y_position);
   } break;
   case WM_MOUSEWHEEL: {
-    // i32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
-    // if (z_delta != 0) {
-    //     // Flatten the input to an OS-independent (-1, 1)
-    //     z_delta = (z_delta < 0) ? -1 : 1;
-    //     // TODO: input processing.
-    // }
+    i32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
+    if (z_delta != 0) {
+      // Flatten the input to an OS-independent (-1, 1)
+      z_delta = (z_delta < 0) ? -1 : 1;
+      input_process_mouse_wheel(z_delta);
+    }
   } break;
   case WM_LBUTTONDOWN:
   case WM_MBUTTONDOWN:
@@ -234,8 +237,27 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
   case WM_LBUTTONUP:
   case WM_MBUTTONUP:
   case WM_RBUTTONUP: {
-    // b8 pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
-    //  TODO: input processing.
+    b8 pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
+    buttons mouse_button = BUTTON_MAX_BUTTONS;
+    switch (msg) {
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+      mouse_button = BUTTON_LEFT;
+      break;
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+      mouse_button = BUTTON_MIDDLE;
+      break;
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+      mouse_button = BUTTON_RIGHT;
+      break;
+    }
+
+    // Pass over to the input subsystem.
+    if (mouse_button != BUTTON_MAX_BUTTONS) {
+      input_process_button(mouse_button, pressed);
+    }
   } break;
   }
 

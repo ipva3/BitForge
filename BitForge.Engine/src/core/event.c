@@ -14,9 +14,10 @@ typedef struct event_code_entry {
 
 #define MAX_MESSAGE_CODES 16384
 
+// State structure.
 typedef struct event_system_state {
   // Lookup table for event codes.
-  event_code_entry registered[MAX_EVENT_CODE];
+  event_code_entry registered[MAX_MESSAGE_CODES];
 } event_system_state;
 
 /**
@@ -73,7 +74,7 @@ b8 event_register(u16 code, void* listener, PFN_on_event on_event) {
   return true;
 }
 
-b8 event_unregistered(u16 code, void* listener, PFN_on_event on_event) {
+b8 event_unregister(u16 code, void* listener, PFN_on_event on_event) {
   if (is_initialized == false) {
     return false;
   }

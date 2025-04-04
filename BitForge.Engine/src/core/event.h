@@ -30,12 +30,12 @@ b8 event_initialize();
 void event_shutdown();
 
 /**
- * Register to listen for when events are send with the provided code. Events with duplicate
+ * Register to listen for when events are sent with the provided code. Events with duplicate
  * listener/callback combos will not be registered again and will cause this to return `false`.
  * @param code The event code to listen for.
  * @param listener A pointer to a listener instance. Can be `0/NULL`.
  * @param on_event The callback function pointer to be invoked when the event code is fired.
- * @returns `true` of the event is successfully registered; otherwise `false`.
+ * @returns `true` if the event is successfully registered; otherwise `false`.
  */
 BFAPI b8 event_register(u16 code, void* listener, PFN_on_event on_event);
 
@@ -47,10 +47,10 @@ BFAPI b8 event_register(u16 code, void* listener, PFN_on_event on_event);
  * @param on_event The callback function pointer to be unregistered.
  * @returns `true` if the event is successfully unregistered; otherwise `false`.
  */
-BFAPI b8 event_unregistered(u16 code, void* listener, PFN_on_event on_event);
+BFAPI b8 event_unregister(u16 code, void* listener, PFN_on_event on_event);
 
 /**
- * Fires an event to listeners of the given code. If an event handlers returns
+ * Fires an event to listeners of the given code. If an event handler returns
  * `true`, the event is considered handled and is not passed on to any more listeners.
  * @param code The event code to fire.
  * @param sender A pointer to the sender. Can be `0/NULL`.
@@ -108,5 +108,5 @@ typedef enum system_event_code {
    */
   EVENT_CODE_RESIZED = 0x08,
 
-  MAX_EVENT_CODE = 0xFF,
+  MAX_EVENT_CODE = 0xFF
 } system_event_code;

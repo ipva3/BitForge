@@ -17,7 +17,7 @@ enum {
   DARRAY_FIELD_LENGTH
 };
 
-BFAPI void* _darray_create(u64 lenght, u64 stride);
+BFAPI void* _darray_create(u64 length, u64 stride);
 BFAPI void _darray_destroy(void* array);
 
 BFAPI u64 _darray_field_get(void* array, u64 field);
@@ -49,7 +49,7 @@ BFAPI void* _darray_insert_at(void* array, u64 index, void* value_ptr);
   }
 // NOTE: could use __auto_type for temp above, but intellisense
 // for VSCode flags it as an unknown type. typeof() seems to
-// work just fine, thought. Both are GNU extenstions.
+// work just fine, though. Both are GNU extensions.
 
 #define darray_pop(array, value_ptr) \
   _darray_pop(array, value_ptr)
@@ -75,5 +75,5 @@ BFAPI void* _darray_insert_at(void* array, u64 index, void* value_ptr);
 #define darray_stride(array) \
   _darray_field_get(array, DARRAY_STRIDE)
 
-#define array_length_set(array, value) \
+#define darray_length_set(array, value) \
   _darray_field_set(array, DARRAY_LENGTH, value)

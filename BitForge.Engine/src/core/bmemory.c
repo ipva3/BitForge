@@ -1,6 +1,7 @@
 #include "bmemory.h"
 
 #include "core/logger.h"
+#include "core/bstring.h"
 #include "platform/platform.h"
 
 // TODO: Custom string lib
@@ -56,7 +57,7 @@ void* ballocate(u64 size, memory_tag tag) {
 
 void bfree(void* block, u64 size, memory_tag tag) {
   if (tag == MEMORY_TAG_UNKNOWN) {
-    BFWARN("allocate called using MEMORY_TAG_UNKNOWN. Re-class this allocation.");
+    BFWARN("free called using MEMORY_TAG_UNKNOWN. Re-class this allocation.");
   }
 
   stats.total_allocated -= size;
@@ -87,25 +88,25 @@ char* get_memory_usage_str() {
   u64 offset = strlen(buffer);
   for (u32 i = 0; i < MEMORY_TAG_MAX_TAGS; ++i) {
     char unit[4] = "XiB";
-    f32 amount = 1.0f;
+    float amount = 1.0f;
     if (stats.tagged_allocations[i] >= gib) {
       unit[0] = 'G';
-      amount = stats.tagged_allocations[i] / (f32)gib;
+      amount = stats.tagged_allocations[i] / (float)gib;
     } else if (stats.tagged_allocations[i] >= mib) {
       unit[0] = 'M';
-      amount = stats.tagged_allocations[i] / (f32)mib;
+      amount = stats.tagged_allocations[i] / (float)mib;
     } else if (stats.tagged_allocations[i] >= kib) {
       unit[0] = 'K';
-      amount = stats.tagged_allocations[i] / (f32)kib;
+      amount = stats.tagged_allocations[i] / (float)kib;
     } else {
       unit[0] = 'B';
       unit[1] = 0;
-      amount = (f32)stats.tagged_allocations[i];
+      amount = (float)stats.tagged_allocations[i];
     }
 
     i32 length = snprintf(buffer + offset, 8000, "  %s: %.2f%s\n", memory_tag_strings[i], amount, unit);
     offset += length;
   }
-  char* out_string = _strdup(buffer);
+  char* out_string = string_duplicate(buffer);
   return out_string;
 }
